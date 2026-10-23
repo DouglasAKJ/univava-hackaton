@@ -128,6 +128,7 @@ export interface LeaderboardPlayer {
   avg_adr: number;
   avg_hs_pct: number;
   most_played_agent: string;
+  most_played_agent_id: string;
 }
 
 export function getOverviewStats() {
@@ -238,8 +239,20 @@ export function getLeaderboard(limit = 20, minMatches = 2): LeaderboardPlayer[] 
       `
     SELECT
       ps.puuid,
-      ps.game_name,
-      ps.tag_line,
+      (
+        SELECT p_name.game_name
+        FROM player_stats p_name
+        WHERE p_name.puuid = ps.puuid
+        ORDER BY p_name.id DESC
+        LIMIT 1
+      ) as game_name,
+      (
+        SELECT p_tag.tag_line
+        FROM player_stats p_tag
+        WHERE p_tag.puuid = ps.puuid
+        ORDER BY p_tag.id DESC
+        LIMIT 1
+      ) as tag_line,
       COUNT(*) as matches_played,
       SUM(ps.kills) as total_kills,
       SUM(ps.deaths) as total_deaths,
@@ -255,9 +268,17 @@ export function getLeaderboard(limit = 20, minMatches = 2): LeaderboardPlayer[] 
         GROUP BY agent_name
         ORDER BY COUNT(*) DESC
         LIMIT 1
-      ) as most_played_agent
+      ) as most_played_agent,
+      (
+        SELECT character_id
+        FROM player_stats p3
+        WHERE p3.puuid = ps.puuid
+        GROUP BY character_id
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+      ) as most_played_agent_id
     FROM player_stats ps
-    GROUP BY ps.puuid, ps.game_name, ps.tag_line
+    GROUP BY ps.puuid
     HAVING matches_played >= ?
     ORDER BY avg_acs DESC
     LIMIT ?

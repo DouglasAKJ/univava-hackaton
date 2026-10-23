@@ -1,17 +1,23 @@
-import Link from "next/link";
-import { Swords, Trophy, BarChart3, Database } from "lucide-react";
+"use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Swords, Trophy } from "lucide-react";
 
 export function Navbar() {
+  const pathname = usePathname();
+
+  const isLeaderboard =
+    pathname === "/leaderboard" || pathname?.startsWith("/leaderboard");
+  const isMatches =
+    !isLeaderboard && (pathname === "/" || pathname?.startsWith("/matches"));
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-rose-600 to-red-500 flex items-center justify-center shadow-lg shadow-rose-900/40 group-hover:scale-105 transition-transform">
-            
-            <img src="/icon raze.png" alt="Icone" />
-
-
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-rose-600 to-red-500 flex items-center justify-center shadow-lg shadow-rose-900/40 group-hover:scale-105 transition-transform overflow-hidden">
+            <img src="/icon raze.png" alt="Icone" className="w-8 h-8 object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -31,16 +37,22 @@ export function Navbar() {
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-200 hover:text-white hover:bg-zinc-800/80 transition-colors"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              isMatches
+                ? "text-white bg-zinc-800/90 border border-zinc-700/80 shadow-sm"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+            }`}
           >
-            
             <span>Partidas</span>
           </Link>
           <Link
             href="/leaderboard"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              isLeaderboard
+                ? "text-white bg-zinc-800/90 border border-zinc-700/80 shadow-sm"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+            }`}
           >
-            
             <span>Leaderboard</span>
           </Link>
         </nav>

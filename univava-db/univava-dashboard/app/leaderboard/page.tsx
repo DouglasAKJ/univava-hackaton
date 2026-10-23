@@ -73,9 +73,21 @@ export default function LeaderboardPage() {
                       <span className="text-zinc-500 text-xs font-mono">#{p.tag_line}</span>
                     </td>
                     <td className="py-3.5 px-3 font-sans">
-                      <span className="px-2 py-0.5 rounded bg-zinc-800 text-xs font-medium text-rose-400 border border-zinc-700">
-                        {p.most_played_agent}
-                      </span>
+                      {p.most_played_agent_id ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={`/agents/${p.most_played_agent_id.toLowerCase()}.png`}
+                            alt={p.most_played_agent}
+                            title={p.most_played_agent}
+                            className="w-7 h-7 rounded-lg object-contain bg-zinc-800/80 p-0.5 border border-zinc-700 hover:border-zinc-500 transition-colors"
+                          />
+                          <span className="text-xs text-zinc-300 font-medium">
+                            {p.most_played_agent}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-500 text-xs">-</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-3 text-center text-zinc-300">
                       {p.matches_played}
