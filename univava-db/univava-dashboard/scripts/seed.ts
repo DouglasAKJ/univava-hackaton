@@ -62,6 +62,8 @@ function getAllJsonFiles(dir: string): string[] {
 
 function initDb(db: Database.Database) {
   db.exec(`
+    DROP TABLE IF EXISTS round_player_stats;
+    DROP TABLE IF EXISTS round_kills;
     DROP TABLE IF EXISTS match_rounds;
     DROP TABLE IF EXISTS player_stats;
     DROP TABLE IF EXISTS matches;
@@ -103,6 +105,14 @@ function initDb(db: Database.Database) {
       bodyshots INTEGER NOT NULL,
       legshots INTEGER NOT NULL,
       first_bloods INTEGER NOT NULL,
+      first_deaths INTEGER NOT NULL,
+      plants INTEGER NOT NULL DEFAULT 0,
+      defuses INTEGER NOT NULL DEFAULT 0,
+      grenade_casts INTEGER NOT NULL DEFAULT 0,
+      ability1_casts INTEGER NOT NULL DEFAULT 0,
+      ability2_casts INTEGER NOT NULL DEFAULT 0,
+      ultimate_casts INTEGER NOT NULL DEFAULT 0,
+      total_abilities_cast INTEGER NOT NULL DEFAULT 0,
       rounds_played INTEGER NOT NULL,
       kd_ratio REAL NOT NULL,
       acs REAL NOT NULL,
@@ -125,6 +135,30 @@ function initDb(db: Database.Database) {
       FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE round_kills (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      match_id TEXT NOT NULL,
+      round_num INTEGER NOT NULL,
+      killer_puuid TEXT NOT NULL,
+      victim_puuid TEXT NOT NULL,
+      kill_time_millis INTEGER NOT NULL,
+      damage_type TEXT,
+      damage_item TEXT,
+      assistants_json TEXT,
+      FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE round_player_stats (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      match_id TEXT NOT NULL,
+      round_num INTEGER NOT NULL,
+      puuid TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      kills INTEGER NOT NULL,
+      damage INTEGER NOT NULL,
+      FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX idx_matches_stage ON matches(stage_code);
     CREATE INDEX idx_matches_map ON matches(map_name);
     CREATE INDEX idx_matches_date ON matches(game_date);
@@ -139,6 +173,14 @@ function initDb(db: Database.Database) {
     CREATE INDEX idx_player_stats_agent ON player_stats(agent_name);
 
     CREATE INDEX idx_match_rounds_match ON match_rounds(match_id);
+
+    CREATE INDEX idx_round_kills_match ON round_kills(match_id);
+    CREATE INDEX idx_round_kills_match_round ON round_kills(match_id, round_num);
+    CREATE INDEX idx_round_kills_killer ON round_kills(killer_puuid);
+    CREATE INDEX idx_round_kills_victim ON round_kills(victim_puuid);
+
+    CREATE INDEX idx_round_player_stats_match ON round_player_stats(match_id);
+    CREATE INDEX idx_round_player_stats_match_round ON round_player_stats(match_id, round_num);
   `);
 }
 
@@ -169,12 +211,16 @@ async function seed() {
     INSERT INTO player_stats (
       match_id, puuid, game_name, tag_line, team_id, team_name,
       character_id, agent_name, kills, deaths, assists, score,
-      damage_dealt, headshots, bodyshots, legshots, first_bloods,
+      damage_dealt, headshots, bodyshots, legshots, first_bloods, first_deaths,
+      plants, defuses,
+      grenade_casts, ability1_casts, ability2_casts, ultimate_casts, total_abilities_cast,
       rounds_played, kd_ratio, acs, adr, hs_pct
     ) VALUES (
       @match_id, @puuid, @game_name, @tag_line, @team_id, @team_name,
       @character_id, @agent_name, @kills, @deaths, @assists, @score,
-      @damage_dealt, @headshots, @bodyshots, @legshots, @first_bloods,
+      @damage_dealt, @headshots, @bodyshots, @legshots, @first_bloods, @first_deaths,
+      @plants, @defuses,
+      @grenade_casts, @ability1_casts, @ability2_casts, @ultimate_casts, @total_abilities_cast,
       @rounds_played, @kd_ratio, @acs, @adr, @hs_pct
     )
   `);
@@ -189,6 +235,24 @@ async function seed() {
     )
   `);
 
+  const insertRoundKill = db.prepare(`
+    INSERT INTO round_kills (
+      match_id, round_num, killer_puuid, victim_puuid,
+      kill_time_millis, damage_type, damage_item, assistants_json
+    ) VALUES (
+      @match_id, @round_num, @killer_puuid, @victim_puuid,
+      @kill_time_millis, @damage_type, @damage_item, @assistants_json
+    )
+  `);
+
+  const insertRoundPlayerStat = db.prepare(`
+    INSERT INTO round_player_stats (
+      match_id, round_num, puuid, score, kills, damage
+    ) VALUES (
+      @match_id, @round_num, @puuid, @score, @kills, @damage
+    )
+  `);
+
   const files = getAllJsonFiles(BASE_DATA_DIR);
   console.log(`📁 Found ${files.length} JSON match files.`);
 
@@ -199,6 +263,7 @@ async function seed() {
     let matchCount = 0;
     let playerCount = 0;
     let roundCount = 0;
+    let killCount = 0;
 
     for (const filePath of files) {
       const filename = path.basename(filePath);
@@ -280,10 +345,19 @@ async function seed() {
       });
       matchCount++;
 
-      // Compute round-level aggregations (damage, headshots, first bloods)
+      // Compute round-level aggregations (damage, headshots, first bloods, plants, defuses)
       const playerDamageMap: Record<
         string,
-        { damage: number; headshots: number; bodyshots: number; legshots: number; firstBloods: number }
+        {
+          damage: number;
+          headshots: number;
+          bodyshots: number;
+          legshots: number;
+          firstBloods: number;
+          firstDeaths: number;
+          plants: number;
+          defuses: number;
+        }
       > = {};
 
       for (const p of players) {
@@ -293,6 +367,9 @@ async function seed() {
           bodyshots: 0,
           legshots: 0,
           firstBloods: 0,
+          firstDeaths: 0,
+          plants: 0,
+          defuses: 0,
         };
       }
 
@@ -318,30 +395,57 @@ async function seed() {
         // Track kills for first blood in this round
         let earliestKillTime = Infinity;
         let firstKillerPuuid: string | null = null;
+        let firstDeathPuuid: string | null = null;
 
         const roundPlayerStats = r.playerStats || [];
         for (const ps of roundPlayerStats) {
           const puuid = ps.puuid;
           if (!puuid || !playerDamageMap[puuid]) continue;
 
+          let roundDmg = 0;
+
           // Damage stats
           if (Array.isArray(ps.damage)) {
             for (const dmg of ps.damage) {
-              playerDamageMap[puuid].damage += dmg.damage || 0;
+              const d = dmg.damage || 0;
+              roundDmg += d;
+              playerDamageMap[puuid].damage += d;
               playerDamageMap[puuid].headshots += dmg.headshots || 0;
               playerDamageMap[puuid].bodyshots += dmg.bodyshots || 0;
               playerDamageMap[puuid].legshots += dmg.legshots || 0;
             }
           }
 
-          // First blood tracking
+          insertRoundPlayerStat.run({
+            match_id: matchId,
+            round_num: roundNum,
+            puuid,
+            score: ps.score || 0,
+            kills: Array.isArray(ps.kills) ? ps.kills.length : 0,
+            damage: roundDmg,
+          });
+
+          // First blood tracking and round kills
           if (Array.isArray(ps.kills)) {
             for (const k of ps.kills) {
-              const killTime = k.timeSinceRoundStartMillis ?? Infinity;
+              const killTime = k.timeSinceRoundStartMillis ?? 0;
               if (killTime < earliestKillTime) {
                 earliestKillTime = killTime;
                 firstKillerPuuid = k.killer;
+                firstDeathPuuid = k.victim;
               }
+
+              insertRoundKill.run({
+                match_id: matchId,
+                round_num: roundNum,
+                killer_puuid: k.killer || "",
+                victim_puuid: k.victim || "",
+                kill_time_millis: killTime,
+                damage_type: k.finishingDamage?.damageType || null,
+                damage_item: k.finishingDamage?.damageItem || null,
+                assistants_json: JSON.stringify(k.assistants || []),
+              });
+              killCount++;
             }
           }
         }
@@ -349,6 +453,19 @@ async function seed() {
         if (firstKillerPuuid && playerDamageMap[firstKillerPuuid]) {
           playerDamageMap[firstKillerPuuid].firstBloods += 1;
         }
+
+        if (firstDeathPuuid && playerDamageMap[firstDeathPuuid]){
+          playerDamageMap[firstDeathPuuid].firstDeaths += 1;
+        }
+
+        if (r.bombPlanter && playerDamageMap[r.bombPlanter]) {
+          playerDamageMap[r.bombPlanter].plants += 1;
+        }
+
+        if (r.bombDefuser && playerDamageMap[r.bombDefuser]) {
+          playerDamageMap[r.bombDefuser].defuses += 1;
+        }
+
       }
 
       // Insert Players
@@ -368,12 +485,22 @@ async function seed() {
         const score = stats.score || 0;
         const playerRounds = stats.roundsPlayed || roundsPlayed || 1;
 
+        const abilityCasts = stats.abilityCasts || {};
+        const grenadeCasts = abilityCasts.grenadeCasts || 0;
+        const ability1Casts = abilityCasts.ability1Casts || 0;
+        const ability2Casts = abilityCasts.ability2Casts || 0;
+        const ultimateCasts = abilityCasts.ultimateCasts || 0;
+        const totalAbilitiesCast = grenadeCasts + ability1Casts + ability2Casts + ultimateCasts;
+
         const dmgStats = playerDamageMap[puuid] || {
           damage: 0,
           headshots: 0,
           bodyshots: 0,
           legshots: 0,
           firstBloods: 0,
+          firstDeaths: 0,
+          plants: 0,
+          defuses: 0,
         };
 
         const kdRatio = deaths === 0 ? kills : parseFloat((kills / deaths).toFixed(2));
@@ -400,6 +527,14 @@ async function seed() {
           bodyshots: dmgStats.bodyshots,
           legshots: dmgStats.legshots,
           first_bloods: dmgStats.firstBloods,
+          first_deaths: dmgStats.firstDeaths,
+          plants: dmgStats.plants,
+          defuses: dmgStats.defuses,
+          grenade_casts: grenadeCasts,
+          ability1_casts: ability1Casts,
+          ability2_casts: ability2Casts,
+          ultimate_casts: ultimateCasts,
+          total_abilities_cast: totalAbilitiesCast,
           rounds_played: playerRounds,
           kd_ratio: kdRatio,
           acs,
@@ -410,7 +545,7 @@ async function seed() {
       }
     }
 
-    return { matchCount, playerCount, roundCount };
+    return { matchCount, playerCount, roundCount, killCount };
   });
 
   const stats = insertAll();
@@ -421,6 +556,7 @@ async function seed() {
   console.log(`🎮 Matches inserted: ${stats.matchCount}`);
   console.log(`👤 Player stats inserted: ${stats.playerCount}`);
   console.log(`🎯 Rounds inserted: ${stats.roundCount}`);
+  console.log(`⚔️  Kills inserted: ${stats.killCount}`);
 
   db.close();
 }

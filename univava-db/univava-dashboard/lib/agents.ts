@@ -34,3 +34,31 @@ export function getAgentName(uuid?: string | null): string {
   if (!uuid) return "Desconhecido";
   return AGENT_MAP[uuid.toLowerCase()] || "Desconhecido";
 }
+
+export const WEAPON_MAP: Record<string, string> = {
+  "29a0cfab-485b-f5d5-779a-b59f85e204a8": "Classic",
+  "44d4e95c-4157-0037-81b2-17841bf2e8e3": "Shorty",
+  "410b2e0b-4ceb-1321-1727-20858f7f3477": "Frenzy",
+  "1baa85b4-4c70-1284-64bb-6481dfc3bb4e": "Ghost",
+  "e336c6b8-418d-9340-d77f-7a9e4cfe0702": "Sheriff",
+  "5f0aaf7a-4289-3998-d5ff-eb9a5cf7ef5c": "Stinger",
+  "462080d1-4035-2937-7c09-27aa2a5c27a7": "Spectre",
+  "910be174-449b-c412-ab22-d0873436b21b": "Bucky",
+  "ec845bf4-4f79-ddda-a3da-0db3774b2794": "Judge",
+  "42da8ccc-40d5-affc-beec-15aa47b42eda": "Bulldog",
+  "ae3de142-4d85-2547-dd26-4e90bed35cf7": "Bulldog",
+  "4ade7faa-4cf1-8376-95ef-39884480959b": "Guardian",
+  "ee8e8d15-496b-07ac-e5f6-8fae5d4c7b1a": "Phantom",
+  "9c82e19d-4575-0200-1a81-3eacf00cf872": "Vandal",
+  "c4883e50-4494-202c-3ec3-6b8a9284f00b": "Marshal",
+  "856d9a7e-4b06-dc37-15dc-9d809c37cb90": "Outlaw",
+  "a03b24d3-4319-996d-0f8c-94bbfba1dfc7": "Operator",
+  "55d8a0f4-4274-ca67-fe2c-06ab45efdf58": "Ares",
+  "63e6c2b6-4a8e-869c-3d4c-e38355226584": "Odin",
+  "2f59173c-4bed-b6c3-2191-dec9b58b9c61": "Faca",
+};
+
+export function getWeaponName(uuid?: string | null): string {
+  if (!uuid) return "Arma";
+  return WEAPON_MAP[uuid.toLowerCase()] || "Arma";
+}

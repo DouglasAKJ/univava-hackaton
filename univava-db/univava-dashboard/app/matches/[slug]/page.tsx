@@ -1,4 +1,5 @@
-import { getMatchById } from "@/lib/queries";
+
+import { getMatchById, getMatchRoundsSummary } from "@/lib/queries";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -12,6 +13,7 @@ import {
   Flame,
   Bomb,
 } from "lucide-react";
+import { RoundHistorySection } from "@/components/RoundHistorySection";
 
 interface MatchPageProps {
   params: Promise<{ slug: string }>;
@@ -24,6 +26,8 @@ export default async function MatchPage({ params }: MatchPageProps) {
   if (!match) {
     notFound();
   }
+
+  const roundsSummary = getMatchRoundsSummary(slug);
 
   // Format date
   const [year, month, day] = match.game_date.split("-");
@@ -90,7 +94,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
               </h2>
             </div>
             <p className="text-xs uppercase tracking-wider font-semibold font-mono text-zinc-500">
-              <p className={`${isTeamAWinner ? "text-emerald-400" : "text-red-400"}`}> {isTeamAWinner ? "Vitória" : "Derrota"}</p>
+              <span className={`${isTeamAWinner ? "text-emerald-400" : "text-red-400"}`}> {isTeamAWinner ? "Vitória" : "Derrota"}</span>
             </p>
           </div>
 
@@ -126,55 +130,15 @@ export default async function MatchPage({ params }: MatchPageProps) {
               {isTeamBWinner}
             </div>
             <p className="text-xs uppercase tracking-wider font-semibold font-mono text-zinc-500">
-              <p className={`${isTeamBWinner ? "text-emerald-400" : "text-red-400"}`}> {isTeamBWinner ? "Vitória" : "Derrota"}</p>
+              <span className={`${isTeamBWinner ? "text-emerald-400" : "text-red-400"}`}> {isTeamBWinner ? "Vitória" : "Derrota"}</span>
             </p>
           </div>
         </div>
       </div>
 
-      {/* Rounds Timeline */}
-      {rounds.length > 0 && (
-        <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 space-y-3">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              Histórico de Rounds ({rounds.length})
-            </h3>
-            <div className="flex items-center gap-4 text-xs text-zinc-400">
-              <span className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full  ${isTeamAWinner ? "bg-emerald-500" : "bg-red-500"}` }/> {match.team_a}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${isTeamBWinner ? "bg-emerald-500" : "bg-red-500"}`}  /> {match.team_b}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 pt-1">
-            {rounds.map((r) => {
-              const wonByA = r.winning_team_name.toLowerCase() === match.team_a.toLowerCase();
-              const wonByB = r.winning_team_name.toLowerCase() === match.team_b.toLowerCase();
-              const wonByWinner = match.winner_team
-                ? r.winning_team_name.toLowerCase() === match.winner_team.toLowerCase()
-                : isTeamAWinner
-                ? wonByA
-                : wonByB;
-
-              return (
-                <div
-                  key={r.id}
-                  title={`Round ${r.round_num + 1} • Venceu: ${r.winning_team_name} (${r.round_result || "Eliminação"}) ${r.plant_site ? `Site ${r.plant_site}` : ""}`}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs font-bold border transition-transform hover:scale-110 cursor-pointer ${
-                    wonByWinner
-                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                      : "bg-red-500/20 text-red-400 border-red-500/40"
-                  }`}
-                >
-                  {r.round_num + 1}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {/* Rounds Timeline & Summary */}
+      {roundsSummary.length > 0 && (
+        <RoundHistorySection match={match} rounds={roundsSummary} />
       )}
 
       {/* Scoreboard: Team A */}
@@ -238,7 +202,8 @@ function TeamScoreboardTable({
               <th className="py-3 px-3 text-right">K/D</th>
               <th className="py-3 px-3 text-right">ADR</th>
               <th className="py-3 px-3 text-right">HS%</th>
-              <th className="py-3 px-4 text-right">First Bloods</th>
+              <th className="py-3 px-3 text-right">FB / FD</th>
+              <th className="py-3 px-3 text-right">Pl / Def</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800/60 font-mono text-zinc-300">
@@ -251,8 +216,16 @@ function TeamScoreboardTable({
                     <span className="text-zinc-500 text-xs font-mono">#{p.tag_line}</span>
                   </td>
                   <td className="py-3 px-3 font-sans">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-800 text-xs font-medium text-rose-400 border border-zinc-700">
-                      {agentIcon(p.character_id)}
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-800 text-xs font-medium text-zinc-200 border border-zinc-700">
+                      {p.character_id && (
+                        <img
+                          src={`/agents/${p.character_id.toLowerCase()}.png`}
+                          alt={p.agent_name}
+                          title={p.agent_name}
+                          className="w-5 h-5 object-contain"
+                        />
+                      )}
+                      <span>{p.agent_name}</span>
                     </span>
                   </td>
                   <td className="py-3 px-3 text-right font-bold text-amber-400">{p.acs}</td>
@@ -273,7 +246,16 @@ function TeamScoreboardTable({
                   <td className="py-3 px-3 text-right font-semibold">{p.kd_ratio}</td>
                   <td className="py-3 px-3 text-right">{p.adr}</td>
                   <td className="py-3 px-3 text-right">{p.hs_pct}%</td>
-                  <td className="py-3 px-4 text-right text-amber-300">{p.first_bloods}</td>
+                  <td className="py-3 px-3 text-right">
+                    <span className="text-emerald-400 font-semibold">{p.first_bloods}</span>
+                    <span className="text-zinc-600"> / </span>
+                    <span className="text-rose-400 font-semibold">{p.first_deaths}</span>
+                  </td>
+                  <td className="py-3 px-3 text-right text-zinc-400">
+                    <span className="text-amber-300">{p.plants}</span>
+                    <span className="text-zinc-600"> / </span>
+                    <span className="text-emerald-400">{p.defuses}</span>
+                  </td>
                 </tr>
               );
             })}
@@ -282,38 +264,4 @@ function TeamScoreboardTable({
       </div>
     </div>
   );
-}
-
-async function agentIcon(character_id: string) {
-  if (!character_id) return null;
-
-  try {
-    const res = await fetch(`https://valorant-api.com/v1/agents/${character_id}`, {
-      next: { revalidate: 86400 },
-    });
-
-    if (!res.ok) {
-      return null;
-    }
-
-    const data = await res.json();
-    const iconUrl = data?.data?.displayIconSmall;
-    const agentName = data?.data?.displayName;
-
-    if (!iconUrl) {
-      return null;
-    }
-
-    return (
-      <img
-        src={iconUrl}
-        alt={agentName || "Ícone do Agente"}
-        title={agentName || "Agente"}
-        className="w-5 h-5 object-contain"
-      />
-    );
-  } catch (error) {
-    console.error("Erro ao buscar ícone do agente:", error);
-    return null;
-  }
 }
