@@ -3,7 +3,8 @@ import { MatchCard } from "@/components/MatchCard";
 import { MatchFilters } from "@/components/MatchFilters";
 import { TopPlayersWidget } from "@/components/TopPlayersWidget";
 import { MapStatsWidget } from "@/components/MapStatsWidget";
-import { Swords, Users, MapPin, Trophy, Shield } from "lucide-react";
+import { Swords, Users, MapPin, Trophy, Shield, UploadCloud } from "lucide-react";
+import Link from "next/link";
 
 interface HomePageProps {
   searchParams: Promise<{
@@ -29,13 +30,23 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Hero / Overview Cards */}
       <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            Visão Geral do Torneio
-          </h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Análise e estatísticas de todas as partidas classificatórias e fase de grupos.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+              Visão Geral do Torneio
+            </h1>
+            <p className="text-sm text-zinc-400 mt-1">
+              Análise e estatísticas de todas as partidas classificatórias e fase de grupos.
+            </p>
+          </div>
+
+          <Link
+            href="/import"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm transition-all shadow-lg shadow-rose-950/50 hover:shadow-rose-900/40 shrink-0 self-start sm:self-auto"
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span>Importar Partida</span>
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

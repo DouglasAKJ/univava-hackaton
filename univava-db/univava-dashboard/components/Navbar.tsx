@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Swords, Trophy } from "lucide-react";
+import { Swords, Trophy, UploadCloud } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
 
+  const isImport = pathname === "/import" || pathname?.startsWith("/import");
   const isLeaderboard =
     pathname === "/leaderboard" || pathname?.startsWith("/leaderboard");
   const isMatches =
-    !isLeaderboard && (pathname === "/" || pathname?.startsWith("/matches"));
+    !isLeaderboard && !isImport && (pathname === "/" || pathname?.startsWith("/matches"));
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
@@ -43,6 +44,7 @@ export function Navbar() {
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
             }`}
           >
+            <Swords className={`w-4 h-4 ${isMatches ? "text-rose-400" : "text-zinc-500"}`} />
             <span>Partidas</span>
           </Link>
           <Link
@@ -53,7 +55,19 @@ export function Navbar() {
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
             }`}
           >
+            <Trophy className={`w-4 h-4 ${isLeaderboard ? "text-amber-400" : "text-zinc-500"}`} />
             <span>Leaderboard</span>
+          </Link>
+          <Link
+            href="/import"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              isImport
+                ? "text-white bg-zinc-800/90 border border-zinc-700/80 shadow-sm"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+            }`}
+          >
+            <UploadCloud className={`w-4 h-4 ${isImport ? "text-rose-400" : "text-zinc-500"}`} />
+            <span>Importar</span>
           </Link>
         </nav>
       </div>
