@@ -86,11 +86,11 @@ export default function ImportMatchPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       {/* Back button */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Voltar para a lista de partidas
@@ -98,48 +98,48 @@ export default function ImportMatchPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
-          <UploadCloud className="w-8 h-8 text-rose-500" />
+        <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5 sm:gap-3">
+          <UploadCloud className="w-7 h-7 sm:w-8 sm:h-8 text-rose-500 shrink-0" />
           Importar Nova Partida
         </h1>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-xs sm:text-sm text-zinc-400 mt-1">
           Faça o upload do arquivo JSON de uma partida da Riot Games para incluí-la no banco de dados e atualizar as estatísticas do torneio.
         </p>
       </div>
 
       {/* Instructions Card: Naming pattern & Fallback */}
-      <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2 text-sm font-bold text-white border-b border-zinc-800/80 pb-3">
-          <Info className="w-4 h-4 text-cyan-400" />
+          <Info className="w-4 h-4 text-cyan-400 shrink-0" />
           <span>Instruções sobre o Nome do Arquivo</span>
         </div>
 
         {/* Standard pattern */}
         <div className="space-y-2 text-xs text-zinc-300">
-          <p className="leading-relaxed">
+          <p className="leading-relaxed text-[11px] sm:text-xs">
             Para que os nomes das equipes, etapa do torneio e placares sejam reconhecidos com 100% de precisão, recomendamos nomear o arquivo seguindo o padrão oficial:
           </p>
 
-          <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 font-mono text-[11px] text-amber-300 break-all select-all">
+          <div className="bg-zinc-950 p-2.5 sm:p-3 rounded-xl border border-zinc-800 font-mono text-[10px] sm:text-[11px] text-amber-300 break-all select-all">
             UNIVAVA_&#123;ETAPA&#125;_&#123;CODIGO&#125;_&#123;DD-MM-AA&#125;_&#123;TIME_A&#125;_&#123;PLACAR_A&#125;_x_&#123;PLACAR_B&#125;_&#123;TIME_B&#125;_&#123;MAPA&#125;.json
           </div>
 
-          <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800/60 text-[11px] text-zinc-400 space-y-1">
+          <div className="bg-zinc-900/60 p-2.5 sm:p-3 rounded-lg border border-zinc-800/60 text-[10px] sm:text-[11px] text-zinc-400 space-y-1">
             <div className="font-semibold text-zinc-300">Exemplo real:</div>
-            <code className="text-emerald-400 block font-mono">
+            <code className="text-emerald-400 block font-mono break-all">
               UNIVAVA_C4_118_13-09-26_ufpr_bbn_3_x_13_fei_darkowls_ascent.json
             </code>
           </div>
         </div>
 
         {/* Fallback Notice */}
-        <div className="flex items-start gap-3 bg-cyan-950/20 border border-cyan-800/30 rounded-xl p-3.5 text-xs text-cyan-200">
+        <div className="flex items-start gap-2.5 sm:gap-3 bg-cyan-950/20 border border-cyan-800/30 rounded-xl p-3 sm:p-3.5 text-xs text-cyan-200">
           <HelpCircle className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold text-cyan-300 block">
+            <span className="font-bold text-cyan-300 block text-xs">
               Seu arquivo tem um nome genérico (ex: match.json)?
             </span>
-            <p className="text-cyan-200/80 leading-relaxed text-[11px]">
+            <p className="text-cyan-200/80 leading-relaxed text-[10px] sm:text-[11px]">
               Não se preocupe! O sistema possui <strong>fallback automático</strong>. Se o nome não seguir o padrão acima, nós extrairemos diretamente de dentro do JSON o mapa, duração, placares, abates e data, definindo as equipes como <em>Time Vermelho</em> e <em>Time Azul</em>.
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function ImportMatchPage() {
       </div>
 
       {/* Upload Box */}
-      <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6">
+      <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-4 sm:p-8 space-y-4 sm:space-y-6">
         <input
           ref={fileInputRef}
           type="file"
@@ -165,17 +165,17 @@ export default function ImportMatchPage() {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 ${
+          className={`border-2 border-dashed rounded-2xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-200 ${
             isDragging
               ? "border-rose-500 bg-rose-500/10 scale-[1.01]"
               : "border-zinc-700 hover:border-zinc-500 bg-zinc-950/40 hover:bg-zinc-950/80"
           }`}
         >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center mb-4 text-zinc-300">
-            <FileCode className="w-8 h-8 text-rose-400" />
+          <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center mb-3 sm:mb-4 text-zinc-300">
+            <FileCode className="w-6 h-6 sm:w-8 sm:h-8 text-rose-400" />
           </div>
 
-          <h3 className="text-base font-bold text-white">
+          <h3 className="text-sm sm:text-base font-bold text-white">
             {file ? file.name : "Clique ou arraste o arquivo JSON da partida aqui"}
           </h3>
 
@@ -188,20 +188,20 @@ export default function ImportMatchPage() {
 
         {/* Selected File Details & Upload Action */}
         {file && (
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950 p-3.5 sm:p-4 rounded-xl border border-zinc-800">
+            <div className="flex items-center gap-3 min-w-0">
               <FileCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-              <div>
-                <div className="text-sm font-semibold text-white truncate max-w-xs sm:max-w-md">
+              <div className="min-w-0">
+                <div className="text-xs sm:text-sm font-semibold text-white truncate max-w-full">
                   {file.name}
                 </div>
-                <div className="text-xs text-zinc-500 font-mono">
+                <div className="text-[10px] sm:text-xs text-zinc-500 font-mono">
                   {(file.size / 1024).toFixed(1)} KB
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setFile(null)}
@@ -213,7 +213,7 @@ export default function ImportMatchPage() {
                 type="button"
                 disabled={loading}
                 onClick={handleUpload}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:bg-rose-900/50 text-white text-sm font-bold transition-all shadow-lg shadow-rose-950/50 cursor-pointer disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:bg-rose-900/50 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-rose-950/50 cursor-pointer disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -267,18 +267,18 @@ export default function ImportMatchPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => setResult(null)}
-                className="text-xs text-zinc-400 hover:text-white transition-colors"
+                className="text-xs text-zinc-400 hover:text-white transition-colors text-left sm:text-center"
               >
                 Importar outra partida
               </button>
 
               <Link
                 href={`/matches/${result.slug}`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-950/50"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-950/50 w-full sm:w-auto"
               >
                 <span>Ver detalhes da partida</span>
                 <ExternalLink className="w-3.5 h-3.5" />

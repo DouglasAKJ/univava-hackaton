@@ -47,41 +47,32 @@ export function TopPlayersWidget({ players }: TopPlayersWidgetProps) {
           return (
             <div
               key={p.puuid}
-              className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/60 hover:border-zinc-700 transition-colors"
+              className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/60 hover:border-zinc-700 transition-colors"
             >
-              <div className="flex items-center gap-3">
-          {/*      
-                <span
-                  className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-mono font-bold border ${badgeClass}`}
-                >
-                  {index + 1}
-                </span>
-        */} 
-
-              
-                <span>
-                  <img src={`${badgeIcon}`} alt="" className="h-8 w-8"/>
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <span className="shrink-0">
+                  <img src={`${badgeIcon}`} alt="" className="h-7 w-7 sm:h-8 sm:w-8"/>
                 </span>
 
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-sm text-zinc-100">{p.game_name}</span>
-                    <span className="text-[11px] text-zinc-500 font-mono">#{p.tag_line}</span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="font-semibold text-xs sm:text-sm text-zinc-100 truncate">{p.game_name}</span>
+                    <span className="text-[10px] sm:text-[11px] text-zinc-500 font-mono shrink-0">#{p.tag_line}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-zinc-400">
-                    <span className="text-rose-400 font-medium">{p.most_played_agent}</span>
-                    <span>•</span>
-                    <span>{p.matches_played} partidas</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-zinc-400">
+                    <span className="text-rose-400 font-medium truncate">{p.most_played_agent}</span>
+                    <span className="text-zinc-600">•</span>
+                    <span className="shrink-0">{p.matches_played} jogos</span>
                   </div>
                 </div>
               </div>
 
-              <div className="text-right">
-                <div className="flex items-center justify-end gap-1 font-mono font-bold text-sm text-amber-400">
+              <div className="text-right shrink-0">
+                <div className="flex items-center justify-end gap-1 font-mono font-bold text-xs sm:text-sm text-amber-400">
                   <Flame className="w-3.5 h-3.5 text-amber-500" />
                   {p.avg_acs}
                 </div>
-                <div className="text-[11px] text-zinc-400 font-mono flex items-center justify-end gap-2">
+                <div className="text-[10px] sm:text-[11px] text-zinc-400 font-mono flex items-center justify-end gap-1.5 sm:gap-2">
                   <span>KD: <strong className="text-zinc-200">{p.avg_kd}</strong></span>
                   <span>HS: <strong className="text-zinc-200">{p.avg_hs_pct}%</strong></span>
                 </div>

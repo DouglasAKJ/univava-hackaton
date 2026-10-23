@@ -33,20 +33,19 @@ export function MatchCard({ match }: MatchCardProps) {
       </div>
 
       {/* Teams and Scores */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 my-2">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3 my-2">
         {/* Team A */}
-        <div className={`flex flex-col ${isTeamAWinner ? "font-bold text-white" : "text-zinc-400"}`}>
+        <div className={`flex flex-col min-w-0 ${isTeamAWinner ? "font-bold text-white" : "text-zinc-400"}`}>
           <div className="flex items-center gap-1.5 truncate">
-            {isTeamAWinner}
-            <span className="truncate text-sm sm:text-base">{match.team_a}</span>
+            <span className="truncate text-xs sm:text-base">{match.team_a}</span>
           </div>
-          <span className="text-[11px] text-zinc-500 font-mono">
+          <span className="text-[10px] sm:text-[11px] text-zinc-500 font-mono">
             {isTeamAWinner ? "Vencedor" : "Derrotado"}
           </span>
         </div>
 
         {/* Score Pill */}
-        <div className="flex items-center gap-2 px-3 py-1 bg-zinc-950/80 rounded-lg border border-zinc-800 font-mono text-base sm:text-lg">
+        <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 bg-zinc-950/80 rounded-lg border border-zinc-800 font-mono text-sm sm:text-lg shrink-0">
           <span className={isTeamAWinner ? "text-emerald-400 font-bold" : "text-zinc-400"}>
             {match.score_a}
           </span>
@@ -58,23 +57,22 @@ export function MatchCard({ match }: MatchCardProps) {
 
         {/* Team B */}
         <div
-          className={`flex flex-col items-end text-right ${
+          className={`flex flex-col items-end text-right min-w-0 ${
             isTeamBWinner ? "font-bold text-white" : "text-zinc-400"
           }`}
         >
           <div className="flex items-center justify-end gap-1.5 truncate w-full">
-            <span className="truncate text-sm sm:text-base">{match.team_b}</span>
-            {isTeamBWinner }
+            <span className="truncate text-xs sm:text-base">{match.team_b}</span>
           </div>
-          <span className="text-[11px] text-zinc-500 font-mono">
+          <span className="text-[10px] sm:text-[11px] text-zinc-500 font-mono">
             {isTeamBWinner ? "Vencedor" : "Derrotado"}
           </span>
         </div>
       </div>
 
       {/* Footer details: Map & Duration */}
-      <div className="flex items-center justify-between text-xs text-zinc-400 pt-3 mt-2 border-t border-zinc-800/50">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between text-[11px] sm:text-xs text-zinc-400 pt-2.5 mt-2 border-t border-zinc-800/50 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <span className="flex items-center gap-1 text-zinc-300 font-medium">
             {match.map_name}
           </span>
@@ -91,7 +89,7 @@ export function MatchCard({ match }: MatchCardProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-rose-400 group-hover:translate-x-1 transition-transform font-medium">
+        <div className="flex items-center gap-1 text-rose-400 group-hover:translate-x-1 transition-transform font-medium shrink-0 ml-auto sm:ml-0">
           <span className="text-[11px]">Ver match</span>
           <ChevronRight className="w-3.5 h-3.5" />
         </div>
